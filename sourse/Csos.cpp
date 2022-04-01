@@ -4,7 +4,7 @@
 #define  NUMBER_IS_2_POW_K(x)   ((!((x)&((x)-1)))&&((x)>1))  // x is pow(2, k), k=1,2, ...
 #define  FT_DIRECT        -1    // Direct transform.
 #define  FT_INVERSE        1    // Inverse transform.
-#define number 64
+#define number 8
 
 //________________________________________________________________________________________________ 
 //______________________________________________________________________________________________ 
@@ -31,6 +31,25 @@
 // LogN = 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14; 
 //________________________________________________________________________________________________ 
 //______________________________________________________________________________________________
+
+bool shift(float* Rdat, float* Idat, int N, int M)
+{
+    if ((Rdat == NULL) || (Idat == NULL))                  return false;
+    if ((N > 16384) || (N < 1))                            return false;
+    if (!NUMBER_IS_2_POW_K(N))                             return false;
+    int i, j;
+    float memr, memi;
+    memr = Rdat[i];
+    memi = Idat[i];
+        for (i = 0; i < M; i++)
+        {
+            Rdata[i] = Rdat[N - M + i];
+            Idata[i] = Idat[N - M + i];
+            Rdata[N - M + i] = Rdat[N - M + i - 1];
+            Idata[N - M + i] = Idat[N - M + i - 1];
+        }
+    return true;
+}
 
 bool  FFT(float *Rdat, float *Idat, int N, int LogN, int Ft_Flag)
 {
@@ -135,8 +154,8 @@ void main()
     // формируем сигнал
     for(i=0; i< number; i++)
     {
-    Re[i] = cos(p * i);  // заполняем действительную часть сигнала
-    Im[i] = 0.0;         // заполняем мнимую часть сигнала
+        Re[i] = cos(p * i);  // заполняем действительную часть сигнала
+        Im[i] = 0.0;         // заполняем мнимую часть сигнала
     }
     // выводим действительную и мнимую части сигнала и мощность сигнала
     FILE* f = fopen("signal.txt", "w");
@@ -152,13 +171,13 @@ void main()
     FILE *a = fopen("spectrum.txt", "w");
     for(i=0; i< number; i++)
     {
-    fprintf(a, "%10.6f  %10.6f  %10.6f\n", Re[i], Im[i], Re[i]*Re[i]+Im[i]*Im[i]);
+        fprintf(a, "%10.6f  %10.6f  %10.6f\n", Re[i], Im[i], Re[i] * Re[i] + Im[i] * Im[i]);
     }
     fclose(a);
 
     FFT(Re, Im, number, log, FT_INVERSE); // вычисляем обратное БПФ
 
-// выводим действительную и мнимую части спектра и спектр мощности
+    // выводим действительную и мнимую части спектра и спектр мощности
     FILE* b = fopen("vostsignal.txt", "w");
     for (i = 0; i < number; i++)
     {
